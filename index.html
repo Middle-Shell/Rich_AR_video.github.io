@@ -189,6 +189,8 @@
             var loadingBar = document.querySelector("#unity-loading-bar");
             var progressBarFull = document.querySelector("#unity-progress-bar-full");
             function StartAR() {
+                document.getElementById("logoDiv").style.display = "none";
+                
                 canvas.style.width = window.innerWidth + "px";
                 canvas.style.height = window.innerHeight + "px";
                 
