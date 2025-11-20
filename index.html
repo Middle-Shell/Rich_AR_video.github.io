@@ -141,17 +141,34 @@
     <div id="unity-container" class="unity-mobile">
         <canvas id="unity-canvas" style="width: 100%; height: 100%; background: #0000; z-index: -99"></canvas>
         <div id="unity-loading-bar" style="
-    position: fixed;
-    top: 0; left: 0; width: 100vw; height: 100vh;
-    z-index: 9999;
-    display: none; /* Hidden initially */
-    background-color: #032E50; /* Your existing bg color */
-">
-    <video id="loading-video" preload="auto" autoplay muted playsinline style="width: 100%; height: 100%; object-fit: fill;">
-        <source src="video/water-fill.mp4" type="video/mp4">
-        Your browser does not support the video tag.
-    </video>
-</div>
+        position: fixed;
+        top: 0; left:35%; width: 0vw; height: 00vh;
+        z-index: 9999;
+        display: none;
+        background-color: #032E50;
+        margin: 0;
+        padding: 0;
+    ">
+        <video
+            id="loading-video"
+            preload="auto"
+            autoplay
+            muted
+            playsinline
+            style="
+                position: absolute;
+                top: 0; left: 0;
+                width: 720px;
+                height: 1280px;
+                object-fit: cover;
+                margin: 0;
+                padding: 0;
+                "
+        >
+            <source src="video/water-fill.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+    </div>
         <canvas id="video-canvas"></canvas>
     </div>
     <script src="arcamera.js" type="text/javascript"></script>
