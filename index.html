@@ -113,6 +113,20 @@
     margin: 0;
     padding: 0;
 }
+#loading-progress {
+    position: absolute !important;
+    top: 35% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+
+    font-family: 'Montserrat', sans-serif;
+    font-size: 3rem;
+    font-weight: 500;
+    color: white;
+    text-shadow: 0 0 12px rgba(0, 0, 0, 0.7);
+
+    pointer-events: none; /* чтобы клики уходили "сквозь" текст */
+}
 
         /* На всякий случай прячем любые прогресс-бары из стандартного шаблона Unity */
         #unity-progress-bar-empty,
@@ -215,6 +229,7 @@
                 <source src="video/water-fill.mp4" type="video/mp4">
                 Your browser does not support the video tag.
             </video>
+            <div id="loading-progress">0%</div>
         </div>
     </div>
 
@@ -229,6 +244,7 @@
         const unityCanvas   = document.querySelector("#unity-canvas");
         const videoCanvas   = document.querySelector("#video-canvas");
         const loadingBar    = document.querySelector("#unity-loading-bar");
+        const loadingProgress = document.querySelector("#loading-progress");
 
         // Инициализация AR
         const initialize = async () => {
@@ -291,15 +307,20 @@
                     productVersion: "0.1.0",
                 },
                 (progress) => {
-                    // progress от 0 до 1
-                    const percentage = Math.floor(progress * 100);
-                    console.log("Progress:", percentage + "%");
+    // progress от 0 до 1
+    const percentage = Math.floor(progress * 100);
+    console.log("Progress:", percentage + "%");
 
-                    if (loadingVideo && videoDuration > 0 && loadingVideo.readyState >= 2) {
-                        const targetTime = progress * videoDuration; // 0% -> 0, 50% -> середина, 99% -> почти конец
-                        loadingVideo.currentTime = targetTime;
-                    }
-                }
+    // обновляем текст
+    if (loadingProgress) {
+        loadingProgress.textContent = percentage + "%";
+    }
+
+    if (loadingVideo && videoDuration > 0 && loadingVideo.readyState >= 2) {
+        const targetTime = progress * videoDuration;
+        loadingVideo.currentTime = targetTime;
+    }
+}
             ).then((unityInstance) => {
                 window.unityInstance = unityInstance;
                 RequestWebcam();
