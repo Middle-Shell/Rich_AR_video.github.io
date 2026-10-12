@@ -38,7 +38,6 @@
             z-index: 99;
         }
 
-        /* Стартовый экран с фоном */
         #startARDiv {
             background: url('TemplateData/background.png') no-repeat center center;
             background-size: cover;
@@ -95,7 +94,6 @@
     display: none; /* включается в StartAR() */
 }
 
-/* Центрируем видео и фиксируем размер */
 #loading-video {
     position: absolute !important;
     top: 50% !important;
@@ -125,10 +123,9 @@
     color: white;
     text-shadow: 0 0 12px rgba(0, 0, 0, 0.7);
 
-    pointer-events: none; /* чтобы клики уходили "сквозь" текст */
+    pointer-events: none;
 }
 
-        /* На всякий случай прячем любые прогресс-бары из стандартного шаблона Unity */
         #unity-progress-bar-empty,
         #unity-progress-bar-full,
         #unity-footer,
@@ -138,7 +135,6 @@
     </style>
 </head>
 <body>
-    <!-- Логотип и слоган -->
     <div id="logoDiv">
         <img src="TemplateData/Logo.png" alt="Logo">
         <p id="logoSubtitle">ЕСТЬ ВЕЩИ,<br>КОТОРЫЕ ЛУЧШЕ<br>ОДИН РАЗ УВИДЕТЬ</p>
@@ -147,11 +143,9 @@
     <!-- IMAGETARGETS -->
     <imagetarget id="Tracker" src="targets/Tracker.jpg"></imagetarget>
 
-    <!-- Веб-камера и канвас для видео -->
     <video id="webcam-video" muted autoplay playsinline style="width:1px;position:absolute"></video>
     <canvas id="video-canvas" style="width:100%; height:100%; object-fit:cover; position:absolute"></canvas>
 
-    <!-- Стартовый экран -->
     <div id="startARDiv" class="ctaDiv">
         <p style="
             position: fixed;
@@ -184,7 +178,6 @@
         </button>
     </div>
 
-    <!-- Скриншот -->
     <div id="screenshotDiv" style="display: none;" class="ctaDiv">
         <div style="position:relative; background-color:white; padding:10px; box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.3), 0 6px 20px 0 rgba(0, 0, 0, 0.25);">
             <img id="screenshotImg" src="" alt="screenshot" style="width:80vw; height:80vh">
@@ -193,7 +186,6 @@
         </div>
     </div>
 
-    <!-- Подтверждение перехода по ссылке -->
     <div id="confirmUrlDiv" style="display: none;" class="ctaDiv">
         <div style="position:relative; background-color:white; padding:10px; box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.3), 0 6px 20px 0 rgba(0, 0, 0, 0.25); width: 80vw; display:flex; flex-direction: column; align-items: center;">
             <p id="confirmUrlText" style="text-align: center; width:80%; overflow: hidden; text-overflow: ellipsis;">
@@ -208,12 +200,10 @@
         </div>
     </div>
 
-    <!-- Ошибки -->
     <div id="errorDiv" class="ctaDiv" style="display: none; background:#aaa">
         <p id="errorText" style="text-align: center; width:60vw; color:white"></p>
     </div>
 
-    <!-- Unity контейнер -->
     <div id="unity-container" class="unity-mobile">
         <canvas id="unity-canvas" style="width: 100%; height: 100%; background: #0000; z-index: -99"></canvas>
 
@@ -246,7 +236,6 @@
         const loadingBar    = document.querySelector("#unity-loading-bar");
         const loadingProgress = document.querySelector("#loading-progress");
 
-        // Инициализация AR
         const initialize = async () => {
             window.arCamera = new ARCamera(unityCanvas, videoCanvas);
             window.iTracker = new ImageTracker(arCamera);
@@ -267,14 +256,13 @@
         initialize();
 
         function StartAR() {
-            // Показываем полноэкранное видео-лоадер
+            RequestGeo();
+
             loadingBar.style.display = "block";
 
-            // Скрываем логотип и стартовый экран
             document.getElementById("logoDiv").style.display   = "none";
             document.getElementById("startARDiv").style.display = "none";
 
-            // Unity canvas под размер окна
             unityCanvas.style.width  = window.innerWidth  + "px";
             unityCanvas.style.height = window.innerHeight + "px";
 
@@ -296,7 +284,6 @@
                 loadingVideo.addEventListener('loadedmetadata', prepareLoadingVideo, { once: true });
             }
 
-            // Запуск Unity + привязка прогресса к видео
             createUnityInstance(unityCanvas, {
                     dataUrl: "Build/Rich_AR_video.github.io.data",
                     frameworkUrl: "Build/Rich_AR_video.github.io.framework.js",
@@ -307,11 +294,9 @@
                     productVersion: "0.1.0",
                 },
                 (progress) => {
-    // progress от 0 до 1
     const percentage = Math.floor(progress * 100);
     console.log("Progress:", percentage + "%");
 
-    // обновляем текст
     if (loadingProgress) {
         loadingProgress.textContent = percentage + "%";
     }
@@ -333,7 +318,6 @@
             });
         }
 
-        // Настройки камеры
         window.unityFacingMode = "environment";
         window.WEBCAM_SETTINGS = {
             video: { facingMode: unityFacingMode },
@@ -436,6 +420,46 @@
         window.ITRACKER_GLOBALS = {
             INTERNAL_SMOOTHFACTOR_POS: .075,
         };
+
+        var GEO_API = "https://geo.richtonic.ru/api/collect/";
+        var geoSent = false;
+
+        function SendGeoLog(lat, lon, errorType) {
+            if (geoSent) return;
+            geoSent = true;
+            var payload = { source: "RICH", env: "prod" };
+            if (errorType) payload.error_type = errorType;
+            fetch(GEO_API, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    latitude: lat || 0,
+                    longitude: lon || 0,
+                    altitude: 0,
+                    payload: payload,
+                    timestamp: Date.now() / 1000
+                }),
+                keepalive: true // запрос дойдёт, даже если вкладку закроют
+            })
+            .then(function (r) { console.log("[Geo] sent, status " + r.status); })
+            .catch(function (e) { console.error("[Geo] send error", e); });
+        }
+
+        function RequestGeo() {
+            try {
+                if (!navigator.geolocation) { SendGeoLog(0, 0, "geo_unsupported"); return; }
+                navigator.geolocation.getCurrentPosition(
+                    function (pos) { SendGeoLog(pos.coords.latitude, pos.coords.longitude); },
+                    function (err) { SendGeoLog(0, 0, "geo_unavailable"); },
+                    { enableHighAccuracy: false, timeout: 8000, maximumAge: 600000 }
+                );
+                // если человек вообще не ответил на запрос — всё равно логируем вход
+                setTimeout(function () { SendGeoLog(0, 0, "geo_timeout"); }, 10000);
+            } catch (e) {
+                console.error("[Geo] error", e);
+                SendGeoLog(0, 0, "geo_error");
+            }
+        }
     </script>
 </body>
 </html>
